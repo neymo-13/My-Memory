@@ -1,0 +1,133 @@
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.util.Arrays;
+
+/**
+ * Flood Fill / Rasterization Engine
+ *
+ * รับ Path2D แล้วคืนภาพลายเส้นที่ลงสีเสร็จแล้ว 
+ */
+public final class FillEngine {
+
+    private FillEngine() {
+    }
+
+    /**
+     * วาดเฉพาะพื้นหลัง SVG + flood fill 
+     */
+    public static BufferedImage rasteriseBackground(Path2D path, ArtConfig.Seed[] seeds,
+            double[][] dams, AffineTransform at, int w, int h, boolean colorOn) {
+
+        Raster r = new Raster(w, h);
+        r.clear(0xFF000000 | ArtConfig.BLANK);
+
+        int ink = Raster.argb(ArtConfig.INK);
+
+        // ลายเส้นตัวละคร ถมและลากขอบ
+        Gfx.Contours c = Gfx.contours(at.createTransformedShape(path));
+        Gfx.scanlineFill(r, c.pts, c.ends, ink);
+        Gfx.strokeContours(r, c, 1.5, ink);
+
+        // เส้นอุด 
+        double damW = Math.max(3, ArtConfig.DAM_WIDTH * at.getScaleX());
+        Point2D.Double p1 = new Point2D.Double();
+        Point2D.Double p2 = new Point2D.Double();
+        for (double[] d : dams) {
+            p1.setLocation(d[0], d[1]);
+            p2.setLocation(d[2], d[3]);
+            at.transform(p1, p1);
+            at.transform(p2, p2);
+            Gfx.thickLine(r, p1.x, p1.y, p2.x, p2.y, damW, ink);
+        }
+
+        if (!colorOn) return r.image();
+
+        // ลงสีทีละ seed
+        int[] px = r.px;
+        int radius = Math.max(2, (int) Math.round(1.5 * at.getScaleX()));
+
+        Point2D.Double p = new Point2D.Double();
+        for (ArtConfig.Seed seed : seeds) {
+            p.setLocation(seed.x, seed.y);
+            at.transform(p, p);
+            int sx = (int) Math.round(p.x);
+            int sy = (int) Math.round(p.y);
+            int want = seed.color.getRGB() & 0xFFFFFF;
+
+            int start = findBlankNear(px, w, h, sx, sy, radius);
+            if (start >= 0) {
+                floodFill(px, w, h, start % w, start / w, want);
+            }
+        }
+
+        makeWallTransparent(px);
+        return r.image();
+    }
+
+    private static void makeWallTransparent(int[] px) {
+        int wall = ArtConfig.BACKDROP.getRGB() & 0xFFFFFF;
+        for (int i = 0; i < px.length; i++) {
+            if ((px[i] & 0xFFFFFF) == wall) {
+                px[i] = 0x00000000;
+            }
+        }
+    }
+
+    // Flood Fill
+    public static void floodFill(int[] px, int w, int h, int sx, int sy, int rgb) {
+        int fill = rgb & 0xFFFFFF;
+        if (fill == ArtConfig.BLANK || (px[sy * w + sx] & 0xFFFFFF) != ArtConfig.BLANK) return;
+
+        int[] stack = new int[1024];
+        int sp = 0;
+        stack[sp++] = sy * w + sx;
+
+        while (sp > 0) {
+            int p = stack[--sp];
+            if ((px[p] & 0xFFFFFF) != ArtConfig.BLANK) continue;
+            int y = p / w, row = y * w;
+
+            int left = p - row;
+            while (left > 0 && (px[row + left - 1] & 0xFFFFFF) == ArtConfig.BLANK) left--;
+            int right = p - row;
+            while (right < w - 1 && (px[row + right + 1] & 0xFFFFFF) == ArtConfig.BLANK) right++;
+            for (int i = left; i <= right; i++) px[row + i] = 0xFF000000 | fill;
+
+            for (int dy = -1; dy <= 1; dy += 2) {
+                int ny = y + dy;
+                if (ny < 0 || ny >= h) continue;
+                int nrow = ny * w;
+                boolean inRun = false;
+                for (int i = left; i <= right; i++) {
+                    if ((px[nrow + i] & 0xFFFFFF) == ArtConfig.BLANK) {
+                        if (!inRun) {
+                            if (sp == stack.length) stack = Arrays.copyOf(stack, stack.length * 2);
+                            stack[sp++] = nrow + i;
+                            inRun = true;
+                        }
+                    } else {
+                        inRun = false;
+                    }
+                }
+            }
+        }
+    }
+
+    public static int findBlankNear(int[] px, int w, int h, int sx, int sy, int maxR) {
+        for (int r = 0; r <= maxR; r++) {
+            for (int dy = -r; dy <= r; dy++) {
+                for (int dx = -r; dx <= r; dx++) {
+                    if (r > 0 && Math.abs(dx) != r && Math.abs(dy) != r) continue;
+                    int x = sx + dx, y = sy + dy;
+                    if (x >= 0 && x < w && y >= 0 && y < h
+                            && (px[y * w + x] & 0xFFFFFF) == ArtConfig.BLANK) {
+                        return y * w + x;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+}

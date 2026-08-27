@@ -1,0 +1,372 @@
+import java.awt.Color;
+import java.util.Arrays;
+
+/**
+ * Data / Configuration
+ *
+ * สีทั้งหมดของโปรเจกต์ 
+ * ARGB ด้วย Raster.argb() ก่อนส่งเข้า Gfx
+ */
+public final class ArtConfig {
+
+    private ArtConfig() {
+    }
+
+    public static final int FRAME_INTERVAL = 360; // ms ต่อเฟรม
+    public static final int TICK_INTERVAL = 30; // ms ต่อการวาด
+
+    public static final String SVG_DIR = "our_memory/svg/";
+
+    // สีในภาพ SVG
+    public static final Color INK = Color.BLACK;   
+    public static final Color BACKDROP = new Color(0xDCEBFF);
+    public static final Color TABLE = new Color(0xF2E4CB);
+    public static final Color HAIR = new Color(0x6B4A2E);
+    public static final Color SKIN = new Color(0xFFDCB8);
+    public static final Color SHIRT = new Color(0x7FA8D4);
+    public static final Color INSIDESHIRT = new Color(0xF2EFE7);
+    public static final Color SCREEN = new Color(0xDCEBFF);
+    public static final Color MOUTH = new Color(0xFF788D);
+    public static final Color TEAR = new Color(0x30AFFF);
+    public static final Color STAR = new Color(0xFFDA62);
+    public static final Color HAT = new Color(0x1D2128);
+    public static final Color MONITOR = new Color(0x2B3442);
+    public static final Color DEVICE = new Color(0xC9D1DA);
+    public static final Color PANTS = new Color(0x4A5568);
+    public static final Color CHAIR = new Color(0x4A4A4A);
+    public static final Color DARKCIRCLE = new Color(0x2C2C2C);
+
+    // ------ ชั้นวางต้นไม้ ------
+    public static final Color WOOD = new Color(0xC89A63);
+    public static final Color WOOD_DARK = new Color(0xA87B46);
+    public static final Color LEAF = new Color(0x84A96A);
+    public static final Color LEAF_DARK = new Color(0x5F8250);
+    public static final Color LEAF_SIDE = new Color(0x73975E);
+    public static final Color POT_RIM = new Color(0xD8B891);
+
+    // ------ นาฬิกาแขวน ------
+    public static final Color CLOCK_FACE = new Color(0xDCD5CC);
+    public static final Color CLOCK_SECOND = new Color(0xE24B4B);
+
+    // ------ หน้าต่าง ------
+    public static final Color SKY = new Color(0xD8E8E2);
+    public static final Color CLOUD = new Color(0xF2FAF6);
+    public static final Color SUN = new Color(0xF4A229);
+    public static final Color WINDOW_FRAME = new Color(0xDDAA66);
+    public static final Color PROP_INK = new Color(0x332B25);
+
+    // ------ ของบนโต๊ะ ------
+    public static final Color CUP = new Color(0xF0F0F0);
+    public static final Color CUP_SHADOW = new Color(0x40000000, true);
+    public static final Color STEAM = new Color(200, 200, 200, 120);
+    public static final Color SUNBEAM = new Color(255, 255, 200, 25);
+
+    // ------ ป้าย KMITL ------
+    public static final Color BOARD_FACE = Color.WHITE;   
+    public static final Color BOARD_BORDER = new Color(0xFF6600);
+    public static final Color SEAL = new Color(0xFF6600);
+    public static final Color SEAL_EDGE = Color.ORANGE;
+    public static final Color BOARD_TEXT = Color.BLACK;
+
+    public static class Seed {
+        public final double x, y;
+        public final Color color;
+
+        public Seed(double x, double y, Color color) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+        }
+    }
+
+    /**
+     * หนึ่งซีน = ไฟล์ภาพ + seed ของตัวเอง + เส้นอุดของตัวเอง
+     */
+    public static final class Scene {
+        public final String name;
+        public final String[] files;
+        public final Seed[] common;
+        public final Seed[] perFrame;
+        public final double[][] dams;
+
+        public Scene(String name, String[] files, Seed[] common, Seed[] perFrame, double[][] dams) {
+            this.name = name;
+            this.files = files;
+            this.common = common;
+            this.perFrame = perFrame;
+            this.dams = dams;
+        }
+
+        /**
+         * ถ้ามี seed สองจุดบริเวณเดียวกัน ตัวแรกชนะ
+         */
+        public Seed[] seedsFor(int i) {
+            if (i < 0 || i >= perFrame.length) {
+                return common;
+            }
+            Seed[] out = Arrays.copyOf(common, common.length + 1);
+            out[common.length] = perFrame[i];
+            return out;
+        }
+    }
+
+    private static final double[][] ROOM_DAMS = {
+            { 149.4, 355.4, -37.4, 456.5 },
+            { 485.1, 238.3, 659.5, 262.5 },
+    };
+
+    // ซีน1:นั่งรอหน้าจอ
+    private static final Seed[] SITTING = {
+            new Seed(30.0, 30.0, BACKDROP),
+            new Seed(317.8, 257.2, BACKDROP),
+            new Seed(342.4, 133.4, BACKDROP),
+            new Seed(218.6, 413.4, TABLE),
+            new Seed(319.0, 230.5, SHIRT),
+            new Seed(229.8, 207.6, SHIRT),
+            new Seed(301.0, 75.5, HAIR),
+            new Seed(325.2, 111.1, SKIN),
+            new Seed(294.4, 142.0, SKIN),
+            new Seed(350.3, 243.5, SHIRT),
+            new Seed(310.0, 222.7, SHIRT),
+            new Seed(306.4, 200.0, SKIN),
+            new Seed(333.5, 210.4, SKIN),
+            new Seed(327.9, 175.8, SKIN),
+            new Seed(302.2, 162.4, SKIN),
+            new Seed(315.6, 168.0, SKIN),
+            new Seed(324.5, 155.8, SKIN),
+            new Seed(326.8, 178.1, SKIN),
+            new Seed(330.1, 169.1, SKIN),        // นิ้ว
+            new Seed(355.8, 208.2, SHIRT),
+            new Seed(298.9, 272.9, SHIRT),
+            new Seed(333.5, 152.4, SHIRT),
+            new Seed(306.7, 110.0, SKIN),
+            new Seed(267.7, 106.7, HAIR),
+            new Seed(267.7, 105.6, HAIR),
+            new Seed(297.8, 131.2, SKIN),
+            new Seed(281.0, 100.0, SKIN),
+            new Seed(330.1, 136.8, SKIN),
+            new Seed(227.5, 166.9, INSIDESHIRT),
+            new Seed(305.6, 161.3, SKIN),
+            new Seed(305.6, 161.3, SKIN)
+    };
+
+    private static final Seed[] SITTING_SCREENS = {
+            new Seed(411.7, 289.3, SCREEN),
+            new Seed(365.4, 323.6, SCREEN),
+            new Seed(404.5, 294.9, SCREEN),
+            new Seed(411.7, 289.3, SCREEN),
+            new Seed(365.4, 323.6, SCREEN),
+            new Seed(404.5, 294.9, SCREEN),
+    };
+
+    public static final Scene SCENE_1 = new Scene("sitting",
+            new String[] {
+                    SVG_DIR + "a1.svg",
+                    SVG_DIR + "a2.svg",
+                    SVG_DIR + "a3.svg",
+                    SVG_DIR + "a4.svg",
+                    SVG_DIR + "a5.svg",
+                    SVG_DIR + "a6.svg",
+            },
+            SITTING, SITTING_SCREENS, ROOM_DAMS);
+
+    //ซีน2:ตกใจ 
+    private static final Seed[] SHOCKED = {
+            new Seed(30.0, 30.0, BACKDROP),      // ผนัง
+            new Seed(341.3, 129.0, BACKDROP),
+            new Seed(298.9, 451.8, TABLE),       // โต๊ะ 
+            new Seed(190.2, 192.0, SHIRT),       // ลำตัว
+            // ดีเทลเสื้อ
+            new Seed(150.6, 136.8, SHIRT),
+            new Seed(216.4, 124.5, SHIRT),
+            new Seed(190.7, 132.3, SHIRT),
+            new Seed(185.1, 136.8, SHIRT),
+            new Seed(165.1, 142.4, SHIRT),
+            new Seed(371.7, 145.3, SHIRT),       // แขนขวา
+            new Seed(297.8, 72.4, HAIR),         // ผม
+            new Seed(264.3, 105.6, HAIR),
+            new Seed(265.2, 123.5, SKIN),        // ใบหน้า
+            new Seed(275.5, 98.9, SKIN),
+            new Seed(306.5, 114.8, SKIN),        // ตา
+            new Seed(81.5, 75.7, SKIN),          // กำปั้นซ้าย
+            new Seed(458.7, 52.9, SKIN),         // กำปั้นขวา
+            //นิ้วแขนซ้าย
+            new Seed(89.2, 24.2, SKIN),
+            new Seed(101.5, 36.4, SKIN),
+            //นิ้วแขนขวา
+            new Seed(459.5, 11.9, SKIN),
+            new Seed(470.6, 20.8, SKIN),
+            new Seed(469.5, 34.2, SKIN),
+            new Seed(480.7, 38.7, SKIN),
+            new Seed(462.8, 34.2, SKIN),
+            //แว่น
+            new Seed(298.9, 125.6, SKIN),
+            new Seed(331.2, 126.8, SKIN),
+            new Seed(292.2, 120.1, SKIN),
+            new Seed(293.3, 158.0, MOUTH),        // ปาก
+            new Seed(290.0, 131.2, TEAR),
+            new Seed(335.7, 135.7, TEAR),
+            new Seed(291.1, 176.9, INSIDESHIRT), // ข้างในเสื้อ
+            new Seed(229.7, 163.6, INSIDESHIRT), // ข้างในเสื้อ
+            new Seed(401.1, 293.1, SCREEN),      // จอแท็บเล็ต
+            new Seed(400.0, 312.7, SCREEN),      // ไอคอนบนจอ
+            new Seed(360.2, 301.9, STAR),
+            new Seed(382.5, 310.8, HAT),
+    };
+
+    private static final Seed[] SHOCKED_FISTS = {};
+
+    public static final Scene SCENE_2 = new Scene("shock",
+            new String[] {
+                    SVG_DIR + "b1.svg",
+            }, SHOCKED, SHOCKED_FISTS, ROOM_DAMS);
+
+    // ซีน3:ดีใจ 
+    private static final Seed[] CELEBRATING = {
+            new Seed(30.0, 30.0, BACKDROP), // ผนัง
+            new Seed(344.6, 131.2, BACKDROP),
+            new Seed(298.9, 451.8, TABLE), // โต๊ะ
+            new Seed(203.3, 302.9, SHIRT), // ลำตัว
+            new Seed(302.2, 275.1, SHIRT),
+            new Seed(346.5, 247.0, SHIRT), // แขนเสื้อ
+            new Seed(315.2, 262.7, SHIRT), // ข้อศอก
+            new Seed(301.1, 75.7, HAIR), // ผม
+            new Seed(293.5, 142.0, SKIN), // ใบหน้า
+            new Seed(306.7, 107.8, SKIN),
+            new Seed(330.1, 127.9, SKIN),
+            new Seed(278.8, 101.1, SKIN),
+            new Seed(297.8, 117.0, SKIN), // หน้าผาก
+            new Seed(303.8, 124.6, SKIN), // ตา
+            new Seed(279.3, 176.8, SKIN), // มือที่คาง
+            //บริเวณแขน
+            new Seed(392.6, 174.7, SKIN),
+            new Seed(378.1, 137.9, SKIN),
+            new Seed(368.0, 136.8, SKIN),
+            new Seed(371.4, 122.3, SKIN),
+            new Seed(330.1, 136.8, SKIN),
+            new Seed(389.2, 127.9, SKIN),
+            new Seed(296.7, 156.9, MOUTH),
+            new Seed(238.6, 177.9, INSIDESHIRT), // ในเสื้อ
+            new Seed(307.8, 172.5, INSIDESHIRT),
+            new Seed(400.5, 292.5, SCREEN), // จอแท็บเล็ต
+            new Seed(400.5, 311.0, SCREEN), // ไอคอนบนจอ
+            new Seed(360.2, 301.9, STAR),
+            new Seed(292.2, 130.1, TEAR),
+            new Seed(284.4, 136.8, TEAR),
+            new Seed(382.5, 310.8, HAT),
+
+    };
+
+    private static final Seed[] CELEBRATING_FISTS = {};
+
+    public static final Scene SCENE_3 = new Scene("happy",
+            new String[] {
+                    SVG_DIR + "c1.svg",
+                    SVG_DIR + "c2.svg",
+            },
+            CELEBRATING, CELEBRATING_FISTS, ROOM_DAMS);
+	
+    private static final double[][] SAD_DAMS = {
+            { 6.7, 630.5, -70.9, 660.7 },       
+            { 461.5, 425, 461.5, -240 },    
+            {1197, 336, 1197, 385}, 
+            { 550, 764.3, 1249.1, 768.8}     
+            
+    };
+
+    private static final Seed[] SAD = {
+            new Seed(1063.8, 135.9, BACKDROP),   // ผนัง 
+            new Seed(107.0, 681.8, TABLE),       // โต๊ะ + เก้าอี้ 
+            new Seed(421.2, 507.8, TABLE),       
+            new Seed(659.0, 135.0, HAIR),        // ผม
+            new Seed(651.9, 295.7, SKIN),        // ใบหน้า
+            new Seed(615.5, 245.1, DARKCIRCLE),        // เลนส์แว่น
+            new Seed(757.5, 239.8, SHIRT),        // หู + ข้างคอ
+            new Seed(546.5, 251.3, DARKCIRCLE),        // หู + ข้างคอ
+            new Seed(559.9, 273.6, DARKCIRCLE),        // หู + ข้างคอ
+            new Seed(700.4, 166.5, SKIN),        // หู + ข้างคอ
+            new Seed(702.6, 177.7, SKIN),        // หู + ข้างคอ
+            new Seed(702.6, 200.0, SKIN),        // หู + ข้างคอ
+            new Seed(695.9, 168.8, SKIN),        // หู + ข้างคอ
+            new Seed(811.7, 458.1, SHIRT),       // ลำตัว
+            new Seed(910.2, 333.9, SHIRT),       // แขนขวาที่เท้าหลัง
+            new Seed(695.4, 547.8, SHIRT),       // แขนซ้ายที่พิมพ์
+            new Seed(991.0, 471.4, SHIRT),       
+            new Seed(1027.4, 433.3, SHIRT),      
+            new Seed(913.8, 680.0, SHIRT),       // ชายเสื้อ
+            new Seed(738.9, 523.8, INSIDESHIRT), // สาบเสื้อ
+            new Seed(752.2, 645.4, BACKDROP),   // ขอบโต๊ะด้านซ้าย
+            new Seed(710.5, 666.7, INSIDESHIRT),
+            new Seed(682.8, 361.6, INSIDESHIRT), // ปกเสื้อใต้คาง
+            new Seed(699.5, 376.2, INSIDESHIRT),
+            new Seed(596.0, 581.5, SKIN),        // มือบนคีย์บอร์ด
+            new Seed(494.8, 561.1, SKIN),        // นิ้ว
+            new Seed(1010.5, 621.4, SKIN),       // มือที่เท้าหลัง
+            new Seed(1038.9, 705.7, SHIRT),  
+            new Seed(702.6, 474.3, SHIRT),
+            new Seed(700.4, 496.6, SHIRT),
+            new Seed(698.1, 505.6, SHIRT),
+            new Seed(700.4, 719.7, PANTS),       // ขา  
+            new Seed(1026.0, 440.9, CHAIR),       // เก้าอี้
+            new Seed(1121.9, 597.0, CHAIR),       // เก้าอี้
+            new Seed(1041.6, 755.4, CHAIR),
+
+            // ---- จอมอนิเตอร์ ----
+            new Seed(239.2, 402.2, MONITOR),     // แผงซ้ายของหน้าจอ
+            new Seed(367.9, 232.7, MONITOR),     // แผงโค้ดขวา
+            new Seed(107.8, 168.8, MONITOR),     // แถบเครื่องมือ
+            new Seed(120.3, 146.6, MONITOR),     // แถบหัวหน้าต่าง
+            new Seed(128.3, 191.8, MONITOR),     // แถบที่อยู่
+            new Seed(287.1, 162.6, MONITOR),     
+            new Seed(209.0, 485.6, MONITOR),     
+            new Seed(122.9, 496.3, MONITOR),
+            new Seed(182.8, 473.1, MONITOR),     
+            new Seed(282.8, 182.4, MONITOR),
+            new Seed(413.0, 423.1, MONITOR),
+            new Seed(192.2, 521.0, MONITOR),
+
+            // แท่งกราฟบนจอ
+            new Seed(130.0, 253.1, STAR),
+            new Seed(154.0, 258.4, TEAR),
+            new Seed(178.0, 368.5, MOUTH),
+            new Seed(191.3, 353.4, STAR),
+            new Seed(204.6, 345.4, TEAR),
+
+            // ---- ตัวเครื่อง ----
+            new Seed(120.3, 526.5, DEVICE),      // กรอบจอ
+            new Seed(74.1, 149.2, DEVICE),       // ขอบจอด้านซ้าย
+            new Seed(227.7, 546.0, DEVICE),      // คอขาตั้ง
+            new Seed(177.1, 550.4, DEVICE),
+            new Seed(272.9, 577.9, DEVICE),      // ฐานจอ
+            new Seed(370.6, 575.3, DEVICE),
+            new Seed(244.3, 611.6, DEVICE),
+            new Seed(143.2, 561.6, DEVICE),     
+            new Seed(288.0, 135.0, DEVICE),      // ตัวนาฬิกา
+            new Seed(363.5, 649.8, DEVICE),      // คีย์บอร์ด
+            new Seed(514.3, 652.5, DEVICE),
+            new Seed(611.1, 526.5, DEVICE),      // เมาส์
+            new Seed(580.0, 533.6, DEVICE),
+    };
+
+    private static final Seed[] SAD_PERFRAME = {};
+
+    public static final Scene SCENE_4 = new Scene("sad",
+            new String[] { SVG_DIR + "d.svg" },
+            SAD, SAD_PERFRAME, SAD_DAMS);
+
+    /** ลำดับการเล่น */
+    public static final Scene[] SCENES = { SCENE_1, SCENE_2, SCENE_3 , SCENE_4};
+
+	public static final int[] SCENE_DURATION = {
+		5000, 
+		2000, 
+		6000,  
+		4000,  
+	};
+
+    public static final int BLANK = 0xFFFFFF;
+
+    public static final double VBW = 600, VBH = 384, PAD = 24;
+	public static final double VBW_SAD = 1200, VBH_SAD = 768;
+    public static final double DAM_WIDTH = 1.0;
+}
